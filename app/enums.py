@@ -4,10 +4,10 @@
 говорили об одних и тех же понятиях, не импортируя друг друга.
 """
 
-from enum import Enum
+from enum import StrEnum
 
 
-class Stage(str, Enum):
+class Stage(StrEnum):
     """На каком этапе отбора сейчас находится отклик."""
 
     APPLIED = "applied"
@@ -28,7 +28,7 @@ class Stage(str, Enum):
         return self in (Stage.APPLIED, Stage.SCREENING, Stage.INTERVIEW)
 
 
-class Source(str, Enum):
+class Source(StrEnum):
     """Где нашли вакансию."""
 
     HH = "hh"
@@ -40,7 +40,7 @@ class Source(str, Enum):
     OTHER = "other"
 
 
-class Priority(str, Enum):
+class Priority(StrEnum):
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"

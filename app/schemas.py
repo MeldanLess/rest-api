@@ -6,7 +6,6 @@
 
 import uuid
 from datetime import datetime
-from typing import Generic, TypeVar
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
@@ -15,8 +14,6 @@ from app.enums import Priority, Source, Stage
 from app.security import MAX_PASSWORD_BYTES
 
 settings = get_settings()
-
-T = TypeVar("T")
 
 
 class ORMModel(BaseModel):
@@ -143,7 +140,7 @@ class ApplicationEventRead(ORMModel):
 # ---------------------------------------------------------------------------
 
 
-class Page(BaseModel, Generic[T]):
+class Page[T](BaseModel):
     items: list[T]
     total: int
     limit: int

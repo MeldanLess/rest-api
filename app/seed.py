@@ -4,7 +4,7 @@
 Безопасно запускать повторно — дубликаты не создаются.
 """
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import select
 
@@ -125,7 +125,7 @@ def main() -> None:
             print(f"Откликов уже {len(existing)} — заполнять нечего.")
             return
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         for sample in SAMPLES:
             payload = ApplicationCreate(

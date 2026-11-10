@@ -35,6 +35,14 @@ ignore = [
 # Шаблон Alembic использует имена, которые не нужны на момент импорта.
 "alembic/*" = ["E402"]
 
+[tool.ruff.lint.isort]
+# `app` — собственный пакет проекта. Без этой строки ruff считает его
+# сторонней библиотекой и требует переставить импорты в неправильном порядке.
+known-first-party = ["app"]
+# Импорт с псевдонимом (`Enum as SAEnum`) держим в одном блоке с остальными
+# именами из того же модуля — так его и читать удобнее.
+combine-as-imports = true
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]

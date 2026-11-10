@@ -1,7 +1,7 @@
 """Статистика по воронке откликов."""
 
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from app.models import Application, ApplicationEvent, User
 from app.security import hash_password
@@ -91,7 +91,7 @@ def test_statistika_soobshchaet_medianu_dney_do_pervogo_otveta(auth_client, db_s
     created = _create(auth_client).json()
 
     application = db_session.get(Application, uuid.UUID(created["id"]))
-    application.created_at = datetime.now(timezone.utc) - timedelta(days=6)
+    application.created_at = datetime.now(UTC) - timedelta(days=6)
     db_session.commit()
 
     event = (
@@ -99,7 +99,7 @@ def test_statistika_soobshchaet_medianu_dney_do_pervogo_otveta(auth_client, db_s
         .filter(ApplicationEvent.application_id == application.id)
         .one()
     )
-    event.created_at = datetime.now(timezone.utc) - timedelta(days=1)
+    event.created_at = datetime.now(UTC) - timedelta(days=1)
     db_session.commit()
 
     body = auth_client.get("/stats/pipeline").json()

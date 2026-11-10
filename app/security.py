@@ -9,7 +9,7 @@ bcrypt используется напрямую, а не через `passlib`: 
 с непонятной ошибкой.
 """
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import bcrypt
 import jwt
@@ -43,7 +43,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def create_access_token(subject: str, expires_delta: timedelta | None = None) -> str:
     """Создаёт подписанный JWT для указанного идентификатора пользователя."""
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     expires = now + (
         expires_delta or timedelta(minutes=settings.access_token_expire_minutes)
     )

@@ -37,7 +37,9 @@ def get_current_user(token: TokenDep, db: DbSession) -> User:
             raise CREDENTIALS_EXCEPTION
         user_id = uuid.UUID(subject)
     except (jwt.PyJWTError, ValueError):
-        raise CREDENTIALS_EXCEPTION
+        # `from None` — нам не нужно, чтобы в лог утекло, какой именно токен
+        # не прошёл проверку; наружу идёт ровно один понятный 401.
+        raise CREDENTIALS_EXCEPTION from None
 
     user = db.get(User, user_id)
     if user is None:
