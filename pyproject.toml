@@ -1,0 +1,57 @@
+[project]
+name = "applytrack-api"
+version = "1.0.0"
+description = "Документированный REST API для учёта откликов на вакансии."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "Your Name" }]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["app", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # ошибки pycodestyle
+    "W",   # предупреждения pycodestyle
+    "F",   # pyflakes
+    "I",   # порядок импортов
+    "B",   # flake8-bugbear
+    "C4",  # генераторные выражения
+    "UP",  # pyupgrade
+    "SIM", # упрощение
+    "ARG", # неиспользуемые аргументы
+]
+ignore = [
+    # Depends() в аргументах по умолчанию — документированный приём FastAPI.
+    "B008",
+    # `*args`/`**kwargs` в нескольких помощниках используются намеренно.
+    "ARG001",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Шаблон Alembic использует имена, которые не нужны на момент импорта.
+"alembic/*" = ["E402"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "--strict-markers --strict-config"
+filterwarnings = [
+    "error::DeprecationWarning:app.*",
+]
+
+[tool.coverage.run]
+source = ["app"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]

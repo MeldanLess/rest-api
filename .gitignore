@@ -1,0 +1,66 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# --- Виртуальные окружения ---
+.venv/
+venv/
+env/
+ENV/
+
+# --- Тесты и статический анализ ---
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.cache
+
+# --- Окружение и секреты ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Боевой конфиг на сервере содержит пароль от базы и ключ подписи. В репозиторий
+# попадает только файл с расширением `.example`.
+deploy/env.production
+deploy/backups/
+backups/
+
+# --- Редакторы ---
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# --- Операционная система ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Локальные данные ---
+*.db
+*.sqlite3
+postgres_data/
