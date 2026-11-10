@@ -1,0 +1,17 @@
+# Юнит systemd для ночной резервной копии базы.
+#
+#   sudo cp deploy/applytrack-backup.service deploy/applytrack-backup.timer /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now applytrack-backup.timer
+#
+# Проверка:  systemctl list-timers applytrack-backup.timer
+
+[Unit]
+Description=Ночная резервная копия базы ApplyTrack
+Requires=docker.service
+After=docker.service applytrack.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/applytrack
+ExecStart=/opt/applytrack/deploy/backup.sh

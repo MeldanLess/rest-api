@@ -1,0 +1,34 @@
+# Юнит systemd для ApplyTrack API.
+#
+#   sudo cp deploy/applytrack.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now applytrack
+#
+# Юнит управляет стеком Docker Compose, а не голым процессом uvicorn: тот же
+# compose-файл используется локально, в CI и в бою, поэтому описание того, как
+# запускается API, ровно одно.
+
+[Unit]
+Description=ApplyTrack API (стек Docker Compose)
+Documentation=https://github.com/MeldanLess/rest-api
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/opt/applytrack
+
+# `up -d` возвращается, как только контейнеры запущены; сам API дожидается,
+# пока база отрапортует о состоянии healthy, и только потом начинает отвечать.
+ExecStart=/usr/bin/docker compose -f docker-compose.prod.yml up -d
+ExecStop=/usr/bin/docker compose -f docker-compose.prod.yml down
+ExecReload=/usr/bin/docker compose -f docker-compose.prod.yml pull && /usr/bin/docker compose -f docker-compose.prod.yml up -d
+
+TimeoutStartSec=0
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
