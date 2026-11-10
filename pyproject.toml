@@ -46,6 +46,10 @@ combine-as-imports = true
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
+# Корень репозитория добавляем в `sys.path` явно: пакет `tests` не имеет
+# `__init__.py`, и без этой строки pytest добавляет в путь каталог `tests/`,
+# из-за чего `import app` в `conftest.py` падает с ModuleNotFoundError.
+pythonpath = ["."]
 addopts = "--strict-markers --strict-config"
 filterwarnings = [
     "error::DeprecationWarning:app.*",
