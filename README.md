@@ -124,6 +124,24 @@ python -m app.seed
 Создаёт `demo@example.com` / `demo12345` и восемь правдоподобных откликов,
 распределённых по всем этапам, чтобы эндпоинту со статистикой было что показать.
 
+### Готовый образ
+
+Образ собирается в CI при каждом теге с версией и лежит в GitHub Container
+Registry — его можно забрать, не собирая у себя:
+
+```bash
+docker pull ghcr.io/meldanless/rest-api:v1.0.0
+```
+
+```bash
+docker run --rm -p 8000:8000 \
+  -e DATABASE_URL="postgresql+psycopg://applytrack:applytrack@db:5432/applytrack" \
+  -e SECRET_KEY="замените-на-свой" \
+  ghcr.io/meldanless/rest-api:v1.0.0
+```
+
+Пакет публичный: `ghcr.io/meldanless/rest-api`, теги `v1.0.0` и `latest`.
+
 ### Развернуть
 
 API работает на обычном Linux-сервере: Docker для API и PostgreSQL, nginx
