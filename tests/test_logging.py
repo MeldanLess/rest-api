@@ -6,6 +6,8 @@
 
 import json
 import logging
+from collections.abc import Iterator
+from contextlib import contextmanager
 
 import pytest
 from fastapi.testclient import TestClient
@@ -30,13 +32,17 @@ def client_without_db():
         yield test_client
 
 
-@pytest.fixture
-def auth_log_records():
-    """Собирает то, что записал роутер аутентификации.
+@contextmanager
+def capture_logs() -> Iterator[list[logging.LogRecord]]:
+    """Собирает всё, что дошло до корневого логгера.
 
-    Обработчик вешается на собственный логгер роутера, а не используется
-    `caplog`: приложение при старте ставит свой корневой обработчик, который
-    снял бы захват pytest.
+    Именно корневой логгер, а не логгер отдельного модуля: в файл лога
+    попадает то, что дошло до корня, и проверять нужно именно это.
+
+    `caplog` здесь не годится — приложение при старте ставит свой корневой
+    обработчик и убирает обработчик pytest, поэтому тот не видит ни одной
+    записи. Свой обработчик добавляется после старта приложения, чтобы
+    `configure_logging` его не снёс.
     """
     records: list[logging.LogRecord] = []
 
@@ -44,17 +50,30 @@ def auth_log_records():
         def emit(self, record: logging.LogRecord) -> None:
             records.append(record)
 
-    auth_logger = logging.getLogger("app.routers.auth")
+    root = logging.getLogger()
     handler = Collector()
-    was_propagating = auth_logger.propagate
-    auth_logger.addHandler(handler)
-    auth_logger.setLevel(logging.DEBUG)
-    auth_logger.propagate = False
+    root.addHandler(handler)
     try:
         yield records
     finally:
-        auth_logger.removeHandler(handler)
-        auth_logger.propagate = was_propagating
+        root.removeHandler(handler)
+
+
+def log_state() -> str:
+    """Состояние логирования — в сообщение об ошибке.
+
+    Чтобы разбираться было по логу прогона, а не по памяти: что записано в
+    корневой логгер, какие у него уровни и что происходит с логгером
+    аутентификации.
+    """
+    root = logging.getLogger()
+    auth = logging.getLogger("app.routers.auth")
+    return (
+        f"корень: level={root.level}, handlers={root.handlers}, "
+        f"manager.disable={root.manager.disable}; "
+        f"app.routers.auth: level={auth.level}, effective={auth.getEffectiveLevel()}, "
+        f"disabled={auth.disabled}, propagate={auth.propagate}, handlers={auth.handlers}"
+    )
 
 
 def test_kazhdyy_otvet_nosit_identifikator_zaprosa(client_without_db):
@@ -169,9 +188,7 @@ def test_psevdonym_pochty_stabilen_i_skryvaet_adres():
     assert len(digest) == 12
 
 
-def test_uchetnye_dannye_nikogda_ne_popadayut_v_log(
-    monkeypatch, client_without_db, auth_log_records
-):
+def test_uchetnye_dannye_nikogda_ne_popadayut_v_log(monkeypatch, client_without_db):
     """Неудачный вход не должен писать в лог пароль — и не должен писать адрес."""
 
     def no_such_user(db, email):
@@ -180,15 +197,26 @@ def test_uchetnye_dannye_nikogda_ne_popadayut_v_log(
 
     monkeypatch.setattr("app.routers.auth.get_user_by_email", no_such_user)
 
-    response = client_without_db.post(
-        "/auth/token",
-        data={"username": "nobody@example.com", "password": "supersecret"},
-    )
-    assert response.status_code == 401
+    with capture_logs() as records:
+        response = client_without_db.post(
+            "/auth/token",
+            data={"username": "nobody@example.com", "password": "supersecret"},
+        )
 
-    logged = "\n".join(
-        f"{record.getMessage()} {record.__dict__}" for record in auth_log_records
-    )
-    assert logged, "неудачный вход вообще не был записан"
-    assert "supersecret" not in logged
-    assert "nobody@example.com" not in logged
+        assert response.status_code == 401
+        # Ответ именно от формы входа: у другого ответа другая подсказка в
+        # detail, и тест проверял бы не тот код.
+        assert response.json()["detail"] == "Неверная почта или пароль"
+
+        # Запись о неудачном входе нужна: без неё перебор паролей по одному
+        # адресу не виден никому.
+        failed = [
+            record
+            for record in records
+            if getattr(record, "event", None) == "auth.login_failed"
+        ]
+        assert failed, "неудачный вход не записан в лог. " + log_state()
+
+        logged = "\n".join(f"{record.getMessage()} {record.__dict__}" for record in records)
+        assert "supersecret" not in logged
+        assert "nobody@example.com" not in logged
