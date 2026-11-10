@@ -21,7 +21,14 @@ from app.database import Base
 config = context.config
 
 if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+    # `disable_existing_loggers=False` — иначе Alembic выключит все логгеры,
+    # которых нет в `alembic.ini`, в том числе логгеры самого приложения.
+    #
+    # Это не видно, пока миграции запускают отдельной командой, но больно,
+    # когда их выполняют в том же процессе, что и приложение (так делает
+    # набор тестов): после `upgrade head` приложение продолжает работать, но
+    # молчит — и неудачный вход не попадает в лог.
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 # Адрес можно передать явно — так делает набор тестов, чтобы накатить миграции
 # на одноразовую базу. Иначе он берётся из настроек приложения.
