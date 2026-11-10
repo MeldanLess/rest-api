@@ -1,0 +1,50 @@
+# Локальный стек разработки: PostgreSQL + API.
+#
+#   docker compose up --build       # запустить всё
+#   docker compose run --rm api bash # оболочка внутри контейнера
+#   docker compose down -v          # остановить и удалить том с базой
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: applytrack-db
+    environment:
+      POSTGRES_USER: applytrack
+      POSTGRES_PASSWORD: applytrack
+      POSTGRES_DB: applytrack
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      # API дожидается, пока эта проверка пройдёт, поэтому он никогда не
+      # стартует против базы, которая ещё инициализируется.
+      test: ["CMD-SHELL", "pg_isready -U applytrack -d applytrack"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  api:
+    build: .
+    container_name: applytrack-api
+    environment:
+      DATABASE_URL: postgresql+psycopg://applytrack:applytrack@db:5432/applytrack
+      SECRET_KEY: dev-only-insecure-secret-key-change-me
+      ENVIRONMENT: development
+      SQL_ECHO: "false"
+      LOG_LEVEL: INFO
+      LOG_FORMAT: console
+    volumes:
+      # Монтируем исходники, чтобы `--reload` видел правки без пересборки.
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+
+volumes:
+  postgres_data:
