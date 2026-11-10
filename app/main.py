@@ -3,8 +3,8 @@
 Запуск:  uvicorn app.main:app --reload
 """
 
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import AsyncIterator
 
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
@@ -77,6 +77,20 @@ app.add_middleware(
 # Самая внешняя middleware: она назначает идентификатор запроса, который потом
 # несут все строки лога и все тела ошибок.
 app.add_middleware(RequestContextMiddleware)
+
+
+# ---------------------------------------------------------------------------
+# Роутеры — именно здесь эндпоинты попадают в приложение.
+# ---------------------------------------------------------------------------
+#
+# В FastAPI маршрут не появляется сам оттого, что модуль импортирован:
+# импорт нужен, чтобы добраться до объекта `router`, а зарегистрировать его
+# должна явная строка `include_router`. Без этих трёх строк приложение
+# поднимается «пустым» — на `/` отвечает, а на `/auth/token` возвращает 404.
+
+app.include_router(auth.router)
+app.include_router(applications.router)
+app.include_router(stats.router)
 
 
 # ---------------------------------------------------------------------------
