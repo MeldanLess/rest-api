@@ -55,7 +55,7 @@ app = FastAPI(
     description=DESCRIPTION,
     lifespan=lifespan,
     contact={
-        "name": "Your Name",
+        "name": "Мелека Данила",
         "url": "https://github.com/MeldanLess",
     },
     license_info={"name": "MIT"},

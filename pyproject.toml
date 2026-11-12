@@ -5,7 +5,7 @@ description = "Документированный REST API для учёта о�
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "MIT" }
-authors = [{ name = "Your Name" }]
+authors = [{ name = "Мелека Данила" }]
 
 [tool.ruff]
 line-length = 100

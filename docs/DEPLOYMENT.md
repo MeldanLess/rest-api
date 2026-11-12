@@ -31,7 +31,7 @@ systemd. Один и тот же `Dockerfile` работает локально,
 Подойдёт любой Linux-VPS с Docker — потребление памяти самим API небольшое, а
 PostgreSQL с несколькими сотнями строк и того меньше. Важны две вещи:
 
-- **Публичный IP и DNS-запись.** Направьте на него `api.your-domain.com`.
+- **Публичный IP и DNS-запись.** Направьте на него `api.example.com`.
 - **Настоящий секретный ключ.** При `ENVIRONMENT=production` приложение
   намеренно отказывается стартовать с ключом по умолчанию.
 
@@ -102,7 +102,7 @@ sudo ln -s /etc/nginx/sites-available/applytrack /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl reload nginx
 
-sudo certbot --nginx -d api.your-domain.com
+sudo certbot --nginx -d api.example.com
 ```
 
 certbot переписывает `nginx.conf` на месте: добавляет перенаправление HTTP на
