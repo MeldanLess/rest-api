@@ -49,11 +49,11 @@ sudo chown "$USER" /opt/applytrack
 git clone https://github.com/MeldanLess/rest-api.git /opt/applytrack
 cd /opt/applytrack
 
-cp deploy/env.production.example deploy/env.production
+cp deploy/env.production.example env.production
 cp deploy/docker-compose.prod.yml .
 ```
 
-Заполните `deploy/env.production`:
+Заполните `env.production`:
 
 | Переменная | Откуда взять |
 |---|---|
@@ -65,8 +65,13 @@ cp deploy/docker-compose.prod.yml .
 Потом защитите файл — в нём пароль от базы и ключ подписи:
 
 ```bash
-chmod 600 deploy/env.production
+chmod 600 env.production
 ```
+
+> Файл называется `env.production` и лежит **в корне репозитория**, а не в
+> `deploy/`: боевой compose-файл копируется в корень (`cp deploy/docker-compose.prod.yml .`)
+> и ищет переменные окружения по пути `./env.production`. Если положить файл
+> в `deploy/`, compose не найдёт его и не запустится.
 
 ## 3. База данных
 

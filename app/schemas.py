@@ -74,7 +74,9 @@ class ApplicationBase(BaseModel):
     salary_min: int | None = Field(default=None, ge=0)
     salary_max: int | None = Field(default=None, ge=0)
     currency: str = Field(default="RUB", max_length=8)
-    notes: str | None = None
+    # Заметка ограничена: без предела одна строка может занять мегабайты, и
+    # база растёт от одного запроса.
+    notes: str | None = Field(default=None, max_length=5000)
     next_step_at: datetime | None = None
 
 
